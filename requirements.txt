@@ -1,0 +1,12 @@
+google-genai>=1.0.0
+torch>=2.2.0
+transformers>=4.51.0
+vllm>=0.8.5
+faiss-cpu>=1.8.0
+bm25s>=0.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+scipy>=1.12.0
+datasets>=2.19.0
+tqdm>=4.66.0
+pydantic-settings>=2.2.0

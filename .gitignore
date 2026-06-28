@@ -1,0 +1,39 @@
+# Environment
+.env
+venv/
+env/
+.venv/
+
+# Data and Models
+data/raw/
+data/processed/
+data/indexes/
+data/results/
+data/models/
+hf_cache/
+kaggle_assets/
+kaggle_download/
+temp/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+.claude/
+
+# Logs
+*.log
+build_log*.txt
+torch_install_*.log
+
+# Large files / others
+*.pdf
+test_set.json
+extracted_answers.txt

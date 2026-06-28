@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "legal-rag"
+version = "0.2.0"
+description = "R2AI2026 BUILD AI LEGAL ASSISTANT - Advanced Vietnamese Legal RAG"
+authors = []
+
+[tool.poetry.dependencies]
+python = "^3.11"
+google-genai = "^1.0"
+torch = "^2.2"
+transformers = "^4.40"
+faiss-cpu = "^1.8"
+rank-bm25 = "^0.2"
+numpy = "^1.26"
+pydantic-settings = "^2.2"
+datasets = "^2.19"
+scikit-learn = "^1.4"
+scipy = "^1.12"
+tqdm = "^4.66"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
