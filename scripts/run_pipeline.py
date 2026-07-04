@@ -2,10 +2,13 @@ import asyncio
 import json
 import logging
 import os
+import sys
 import time
 from pathlib import Path
 
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

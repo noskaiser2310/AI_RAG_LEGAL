@@ -6,9 +6,11 @@ Chay duoc tren may local (8GB GPU). Khong can LLM (chi test phan IR = phan tinh 
     python scripts/test_retrieval.py
 """
 import os, sys, json, time, asyncio
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -16,15 +18,16 @@ except Exception:
 
 import psutil, numpy as np, faiss
 from src.core.base import RetrievedChunk
+from src.core.config import config
 from src.retrieval.indexing import DenseIndex, SparseIndex, rrf_fusion
 from src.retrieval.text_processor import normalize_vietnamese_light, expand_legal_abbreviations
 
 proc = psutil.Process()
 def ram(tag): print(f"[RAM] {tag}: rss={proc.memory_info().rss/1e9:.2f}GB avail={psutil.virtual_memory().available/1e9:.2f}GB")
 
-CORPUS = "D:\\AI_RAG_LEGAL\\data\\processed\\corpus.jsonl"
-DENSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\dense.index"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
+CORPUS = str(Path(config.DATA_DIR) / "processed" / config.CORPUS_FILE)
+DENSE = str(Path(config.INDEX_DIR) / "dense.index")
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
 E5 = "Với một truy vấn về luật Việt Nam, truy xuất các đoạn văn liên quan có chứa câu trả lời cho truy vấn đó"
 
 QUERIES = [

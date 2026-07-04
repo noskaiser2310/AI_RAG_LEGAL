@@ -15,8 +15,18 @@ INITIAL_BACKOFF = 2.0
 
 
 class Gemma4Client(BaseLLM):
+    """
+    Client for interacting with Google's Gemma models via the new google-genai SDK.
+    Supports asynchronous text generation with automatic retries on transient errors.
+    """
     def __init__(self, model: str | None = None):
-        self.model = model or "gemma-4-26b-a4b-it"
+        """
+        Initializes the Gemma4 client.
+        
+        Args:
+            model (str, optional): The model ID to use. Defaults to "gemma-4-26b-a4b-it".
+        """
+        self.model = model or config.GEMINI_MODEL
         self.client = genai.Client(api_key=config.GOOGLE_API_KEY)
         logger.info(f"Gemma4Client initialized with model={self.model}")
 

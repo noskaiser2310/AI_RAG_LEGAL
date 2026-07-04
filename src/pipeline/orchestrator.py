@@ -6,7 +6,7 @@ import numpy as np
 from src.core.base import QueryResult, QueryType
 from src.core.config import config
 from src.generator.generator import Generator
-from src.llm.qwen3_client import Qwen3Client
+from src.llm.hf_client import HFClient
 from src.reranker.cross_encoder import CrossEncoderReranker
 from src.retrieval.adaptive import LLMQueryClassifier, get_adaptive_config
 from src.retrieval.hyde import HyDEGenerator
@@ -77,7 +77,7 @@ class LegalRAGPipeline:
         self.use_decomposition = use_decomposition
 
         self.embedder = embedder
-        self.llm = llm or Qwen3Client()
+        self.llm = llm or HFClient()
         self.reranker = reranker or CrossEncoderReranker()
         self.dense_index = dense_index
         self.sparse_index = sparse_index
@@ -108,7 +108,7 @@ class LegalRAGPipeline:
             from src.embedding.harrier_embedding import HarrierEmbedding
             embedder = HarrierEmbedding()
         if llm is None:
-            llm = Qwen3Client()
+            llm = HFClient()
         if reranker is None:
             from src.reranker.cross_encoder import LLMReranker, TwoStageReranker
             ce = CrossEncoderReranker()

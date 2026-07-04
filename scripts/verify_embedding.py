@@ -1,8 +1,10 @@
 """Sanity-check pooling: embedding phải PHÂN BIỆT được text khác nhau (không collapse)."""
 import os, sys, asyncio
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 import numpy as np

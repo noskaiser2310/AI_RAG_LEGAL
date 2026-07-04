@@ -1,17 +1,18 @@
 import os, sys, time, asyncio, traceback, json
 import logging
+from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
-DENSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\dense.index"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
-TEST_SET_PATH = "D:\\AI_RAG_LEGAL\\test_set.json"
+from src.core.config import config
+DENSE = str(Path(config.INDEX_DIR) / "dense.index")
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
+TEST_SET_PATH = str(_ROOT / "test_set.json")
 
 async def main():
     try:

@@ -7,7 +7,10 @@ sys.stdout.reconfigure(encoding='utf-8')
 from pathlib import Path
 import faiss
 
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 from src.core.config import config
 from src.embedding.harrier_embedding import HarrierEmbedding
@@ -24,9 +27,8 @@ logging.basicConfig(
 
 logger = logging.getLogger("test_30")
 
-DENSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\dense.index"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
-TEST_SET_PATH = "D:\\AI_RAG_LEGAL\\test_set.json"
+DENSE = str(Path(config.INDEX_DIR) / "dense.index")
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
 
 class LazyDocsList:
     def __init__(self, jsonl_path):

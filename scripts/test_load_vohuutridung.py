@@ -1,6 +1,7 @@
 """Quick test: load vohuutridung content config with streaming."""
 import os
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+os.environ.setdefault("HF_HOME", str(Path(__file__).resolve().parent.parent / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 from datasets import load_dataset

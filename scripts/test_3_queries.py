@@ -1,17 +1,20 @@
 import os, sys, time, asyncio, traceback, json
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
 import psutil, faiss
+from src.core.config import config
 proc = psutil.Process()
 def ram(tag): print(f"[RAM] {tag}: rss={proc.memory_info().rss/1e9:.2f}GB avail={psutil.virtual_memory().available/1e9:.2f}GB")
 
-DENSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\dense.index"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
-TEST_SET_PATH = "D:\\AI_RAG_LEGAL\\test_set.json"
+DENSE = str(Path(config.INDEX_DIR) / "dense.index")
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
+TEST_SET_PATH = str(_ROOT / "test_set.json")
 
 async def main():
     ram("start")
@@ -125,7 +128,7 @@ async def main():
             traceback.print_exc()
             
     # Dump to output.json
-    output_path = "D:\\AI_RAG_LEGAL\\scripts\\output.json"
+    output_path = _ROOT / "scripts" / "output.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     print(f"\nSuccessfully wrote results to {output_path}")

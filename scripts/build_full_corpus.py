@@ -10,7 +10,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+os.environ.setdefault("HF_HOME", str(Path(__file__).resolve().parent.parent / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 
 sys.path.insert(0, str(Path(__file__).parent.parent))

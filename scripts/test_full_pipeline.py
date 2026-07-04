@@ -2,18 +2,21 @@
 Dùng mmap cho dense index để đỡ RAM. LLM = client cấu hình trong .env (Gemini/Gemma - prototyping).
 """
 import os, sys, time, asyncio, traceback
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
 import psutil, faiss
+from src.core.config import config
 proc = psutil.Process()
 def ram(tag): print(f"[RAM] {tag}: rss={proc.memory_info().rss/1e9:.2f}GB avail={psutil.virtual_memory().available/1e9:.2f}GB")
 
-DENSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\dense.index"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
+DENSE = str(Path(config.INDEX_DIR) / "dense.index")
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
 
 async def main():
     ram("start")

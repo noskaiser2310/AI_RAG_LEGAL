@@ -3,6 +3,7 @@
 venv/
 env/
 .venv/
+.python-version
 
 # Data and Models
 data/raw/
@@ -14,6 +15,7 @@ hf_cache/
 kaggle_assets/
 kaggle_download/
 temp/
+archive/
 
 # Python
 __pycache__/
@@ -22,18 +24,59 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+*.so
+*.pyd
+*.dll
+
+# Testing & Coverage
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.benchmarks/
+.hypothesis/
+
+# Type checking & Linting
+.mypy_cache/
+.ruff_cache/
+dmypy.json
+.pytype/
+.pyre/
 
 # IDE
 .vscode/
 .idea/
 .claude/
+notebooks/.ipynb_checkpoints/
+
+# Editor temp / swap files
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 build_log*.txt
 torch_install_*.log
 
+# ML / Experiment Tracking
+wandb/
+mlruns/
+lightning_logs/
+runs/
+
+# Model weights (usually downloaded, not committed)
+*.pt
+*.pth
+*.bin
+*.safetensors
+
 # Large files / others
 *.pdf
 test_set.json
 extracted_answers.txt
+*.zip
+*.tar.gz
+*.7z

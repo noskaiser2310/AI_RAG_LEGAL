@@ -1,6 +1,8 @@
 """Analyze legal type importance for legal QA."""
 import os, sys
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_CACHE = Path(os.environ.get("HF_HOME", str(Path(__file__).resolve().parent.parent / "hf_cache")))
+os.environ.setdefault("HF_HOME", str(_CACHE))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -8,9 +10,8 @@ import json
 import pandas as pd
 from collections import Counter, defaultdict
 import pyarrow.parquet as pq
-from pathlib import Path
 
-cache_dir = Path("D:\\AI_RAG_LEGAL\\hf_cache\\hub\\datasets--vohuutridung--vietnamese-legal-documents\\snapshots")
+cache_dir = _CACHE / "hub" / "datasets--vohuutridung--vietnamese-legal-documents" / "snapshots"
 snapshots = list(cache_dir.iterdir())
 meta_dir = snapshots[0] / "metadata"
 pq_files = list(meta_dir.glob("*.parquet"))

@@ -1,12 +1,13 @@
 """Check if dropped types could contain useful documents."""
 import os, sys
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_CACHE = Path(os.environ.get("HF_HOME", str(Path(__file__).resolve().parent.parent / "hf_cache")))
+os.environ.setdefault("HF_HOME", str(_CACHE))
 sys.stdout.reconfigure(encoding="utf-8")
 
 import pyarrow.parquet as pq
-from pathlib import Path
 
-cache_dir = Path("D:\\AI_RAG_LEGAL\\hf_cache\\hub\\datasets--vohuutridung--vietnamese-legal-documents\\snapshots")
+cache_dir = _CACHE / "hub" / "datasets--vohuutridung--vietnamese-legal-documents" / "snapshots"
 pq_file = list((list(cache_dir.iterdir())[0] / "metadata").glob("*.parquet"))[0]
 df = pq.read_table(pq_file).to_pandas()
 

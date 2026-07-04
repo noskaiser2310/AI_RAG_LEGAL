@@ -1,16 +1,19 @@
 """Test riêng BM25 sparse retrieval (không phụ thuộc embedding/dense)."""
 import os, sys, json, time
-os.environ["HF_HOME"] = "D:\\AI_RAG_LEGAL\\hf_cache"
+from pathlib import Path
+_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_ROOT))
+os.environ.setdefault("HF_HOME", str(_ROOT / "hf_cache"))
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
-sys.path.insert(0, "D:\\AI_RAG_LEGAL")
 try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
+from src.core.config import config
 from src.retrieval.indexing import SparseIndex
 from src.retrieval.text_processor import normalize_vietnamese_light, expand_legal_abbreviations
 
-CORPUS = "D:\\AI_RAG_LEGAL\\data\\processed\\corpus.jsonl"
-SPARSE = "D:\\AI_RAG_LEGAL\\data\\indexes\\sparse"
+CORPUS = str(Path(config.DATA_DIR) / "processed" / config.CORPUS_FILE)
+SPARSE = str(Path(config.INDEX_DIR) / "sparse")
 QUERIES = [
     "Doanh nghiệp nhỏ và vừa được hưởng ưu đãi gì khi tham gia đấu thầu?",
     "Hộ kinh doanh cần đáp ứng điều kiện gì để được cấp giấy chứng nhận đăng ký?",

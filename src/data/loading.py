@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import time
 from pathlib import Path
 
 from datasets import load_dataset
@@ -200,34 +201,62 @@ def load_utslvc_docs(max_docs: int | None = None) -> list[dict]:
     return docs
 
 
-def load_kiencute_pretrain(max_docs: int | None = None) -> list[dict]:
-    logger.info("Loading KienCute/legal-pretrain...")
-    ds = load_dataset("KienCute/legal-pretrain", split="train", streaming=False)
-    if max_docs:
-        ds = ds.select(range(min(max_docs, len(ds))))
+def load_kiencute_pretrain(
+    max_docs: int | None = None,
+    output_file: str | None = None,
+) -> list[dict]:
+    """
+    Load KienCute/legal-pretrain with streaming (avoids downloading full 50GB dataset).
+    If output_file is provided, writes incrementally.
+    """
+    logger.info("Loading KienCute/legal-pretrain (streaming)...")
+    try:
+        ds = load_dataset("KienCute/legal-pretrain", split="train", streaming=True)
+    except Exception as e:
+        logger.warning(f"Cannot load KienCute: {e}. Skipping.")
+        return []
+
     docs = []
+    out_fh = None
+    if output_file:
+        out_fh = open(output_file, "a", encoding="utf-8")
+
     count = 0
+    written = 0
     for row in tqdm(ds, desc="KienCute"):
+        if max_docs and count >= max_docs:
+            break
+        count += 1
         doc_content = row.get("doc_content", "")
         meta = row.get("metadata", {}) or {}
-        if not doc_content or len(doc_content.strip()) < 30:
+        if not doc_content or len(str(doc_content).strip()) < 30:
             continue
-        if len(doc_content) > 500_000:
+        if len(str(doc_content)) > 500_000:
             continue
         try:
             text = clean_text(doc_content)
-        except MemoryError:
+        except (MemoryError, Exception):
             continue
-        docs.append({
+        doc = {
             "text": text,
             "title": meta.get("DocName", "") or f"VB {meta.get('Id', count)}",
             "doc_id": f"kiencute_{meta.get('Id', count)}",
             "article_id": "",
             "issuing_authority": meta.get("OrganName", ""),
             "source": "kiencute",
-        })
-        count += 1
-    logger.info(f"  {len(docs)} docs")
+        }
+        if out_fh:
+            out_fh.write(json.dumps(doc, ensure_ascii=False) + "\n")
+            written += 1
+        else:
+            docs.append(doc)
+
+    if out_fh:
+        out_fh.close()
+        logger.info(f"  Written {written} docs (streaming)")
+        return []
+
+    logger.info(f"  Loaded {len(docs)} docs (in-memory)")
     return docs
 
 
@@ -361,8 +390,28 @@ def build_corpus(
                 gc.collect()
                 continue
 
+            if key == "kiencute":
+                logger.info("Loading source: kiencute (streaming to file)...")
+                docs = load_kiencute_pretrain(
+                    max_docs=max_samples_per_source or 5000,
+                    output_file=str(temp_path),
+                )
+                count = 0
+                if temp_path.exists() and not docs:
+                    with open(temp_path, "r", encoding="utf-8") as fh:
+                        for _ in fh:
+                            count += 1
+                written_this = count if not docs else len(docs)
+                if written_this > 0:
+                    total_written += written_this
+                gc.collect()
+                continue
+
             logger.info(f"Loading source: {key}...")
             raw = SOURCE_LOADERS[key](max_samples_per_source)
+            if not raw:
+                logger.warning(f"  No docs from {key}")
+                continue
             logger.info(f"  Loaded {len(raw)} docs from {key}")
 
             enriched = _enrich_docs(raw)
@@ -441,16 +490,63 @@ def build_corpus(
     return docs
 
 
+class LazyCorpus:
+    """
+    RAM-efficient corpus loader: builds byte-offset map from JSONL,
+    loads individual docs on-demand. Use as drop-in replacement for list[dict].
+    """
+    def __init__(self, jsonl_path: str | Path):
+        self.path = Path(jsonl_path)
+        self.offsets: list[int] = []
+        t0 = time.time()
+        with open(self.path, "rb") as f:
+            while True:
+                off = f.tell()
+                line = f.readline()
+                if not line:
+                    break
+                self.offsets.append(off)
+        self._file = open(self.path, "rb")
+        logger.info(f"LazyCorpus: {len(self.offsets):,} docs from {self.path} ({time.time()-t0:.1f}s)")
+
+    def __len__(self) -> int:
+        return len(self.offsets)
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            return [self[i] for i in range(*idx.indices(len(self.offsets)))]
+        if idx < 0:
+            idx += len(self.offsets)
+        self._file.seek(self.offsets[idx])
+        return json.loads(self._file.readline())
+
+    def __iter__(self):
+        """Iterate through all docs (loads each on-demand, not into RAM)."""
+        for i in range(len(self)):
+            yield self[i]
+
+    def __del__(self):
+        if hasattr(self, '_file'):
+            self._file.close()
+
+
 def load_corpus(
     cache_path: str | Path | None = None,
     max_chunks: int | None = None,
     sources: list[str] | None = None,
     force_rebuild: bool = False,
-) -> list[dict]:
+    lazy: bool = False,
+) -> list[dict] | LazyCorpus:
     cache_path = Path(cache_path or f"{config.DATA_DIR}/processed/{config.CORPUS_FILE}")
 
     if force_rebuild or not cache_path.exists():
-        return build_corpus(output_path=cache_path, sources=sources, force_rebuild=force_rebuild)
+        docs = build_corpus(output_path=cache_path, sources=sources, force_rebuild=force_rebuild)
+        if lazy and cache_path.exists():
+            return LazyCorpus(cache_path)
+        return docs
+
+    if lazy:
+        return LazyCorpus(cache_path)
 
     docs = []
     with open(cache_path, "r", encoding="utf-8") as f:

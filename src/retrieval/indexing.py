@@ -103,7 +103,7 @@ class SparseIndex:
             json.dump(meta, f)
         logger.info(f"Sparse index saved to {path} (bm25s)")
 
-    def load(self, path: str | Path):
+    def load(self, path: str | Path, corpus_texts: list[str] | None = None):
         import bm25s as bm25s_lib
         path = Path(path)
         self.bm25 = bm25s_lib.BM25.load(str(path), load_corpus=False)
@@ -114,14 +114,22 @@ class SparseIndex:
             self.doc_ids = meta.get("doc_ids", [])
             self.use_vn_segmentation = meta.get("use_vn_segmentation", True)
             self._engine = meta.get("_engine", "bm25s")
-        # corpus loaded separately by caller
-        self.corpus = []
-        scores = self.bm25.scores
-        n_docs = scores.get('num_docs', 0) if isinstance(scores, dict) else (scores.shape[0] if hasattr(scores, 'shape') else 0)
-        if not self.doc_ids:
-            self.doc_ids = list(range(n_docs))
+        if corpus_texts:
+            self.corpus = corpus_texts
+        else:
+            logger.warning("No corpus_texts provided to SparseIndex.load() — BM25 search may be inaccurate")
+            inv_index = getattr(self.bm25, 'scores', None)
+            if isinstance(inv_index, dict):
+                n_docs = inv_index.get('num_docs', 0)
+            elif hasattr(inv_index, 'shape'):
+                n_docs = inv_index.shape[0]
+            else:
+                n_docs = 0
+            if not self.doc_ids:
+                self.doc_ids = list(range(n_docs))
+            self.corpus = []
         vocab_size = len(self.bm25.vocab_dict) if hasattr(self.bm25, 'vocab_dict') else 0
-        logger.info(f"Sparse index loaded: {n_docs} docs, {vocab_size:,} terms")
+        logger.info(f"Sparse index loaded: {len(self.doc_ids)} docs, {vocab_size:,} terms")
 
 
 def rrf_fusion(

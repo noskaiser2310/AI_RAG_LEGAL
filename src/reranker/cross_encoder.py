@@ -18,26 +18,10 @@ class CrossEncoderReranker(BaseReranker):
         self.device = config.DEVICE
         self.use_softmax = use_softmax
         logger.info(f"Loading reranker: {self.model_name} on {self.device}")
-        import tiktoken.load as _tl
-        _orig_load = _tl.load_tiktoken_bpe
-
-        def _patched_load(path):
-            try:
-                return _orig_load(path)
-            except (ValueError, Exception):
-                import sentencepiece as spm
-                sp = spm.SentencePieceProcessor()
-                sp.Load(path)
-                return {sp.IdToPiece(i).encode(): i for i in range(sp.GetPieceSize())}
-
-        _tl.load_tiktoken_bpe = _patched_load
-        try:
-            from transformers import AutoTokenizer
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                self.model_name, trust_remote_code=True, use_fast=False
-            )
-        finally:
-            _tl.load_tiktoken_bpe = _orig_load
+        from transformers import AutoTokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name, trust_remote_code=True, use_fast=False
+        )
         dtype = torch.float16 if self.device == "cuda" else torch.float32
         self.model = AutoModelForSequenceClassification.from_pretrained(
             self.model_name,
