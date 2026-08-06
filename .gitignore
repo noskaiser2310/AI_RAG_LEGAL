@@ -33,7 +33,8 @@ data/*.duckdb
 hf_cache/
 kaggle_assets/
 kaggle_download/
-
+docs/
+data/
 # ========== ĐỒ TẠM THỜI / BACKUP / BÀI TẬP CŨ ==========
 temp/
 archive/
