@@ -1,24 +1,51 @@
-# Environment
+# ========== MÔI TRƯỜNG & BÍ MẬT ==========
+# Không bao giờ commit file chứa API key (.env)
 .env
+.env.*
+!.env.example
 venv/
 env/
 .venv/
 .python-version
+# Config cá nhân chứa key Gemini
+src/llm/gemini_parallel.py
+src/llm/gemini_parallel_template.py
 
-# Data and Models
+# ========== THƯ MỤC THAM KHẢO (CODE CỦA ĐỘI KHÁC) ==========
+# Code top-10 R2AI stage-1 + tài liệu mentor: CHỈ để tham khảo cục bộ,
+# không đưa lên GitHub/Kaggle (không phải code của mình)
+reference/
+references/
+research/
+
+# ========== TÀI LIỆU NỘI BỘ ==========
+# Ghi chú/analysis của mình (OPTIMIZATION_FROM_TOP10...): chỉ dùng cục bộ
+docs/
+
+# ========== DỮ LIỆU & MODEL (QUÁ NẶNG, TẢI RIÊNG TRÊN KAGGLE) ==========
 data/raw/
 data/processed/
 data/indexes/
 data/results/
 data/models/
+data/*.db
+data/*.duckdb
 hf_cache/
 kaggle_assets/
 kaggle_download/
+
+# ========== ĐỒ TẠM THỜI / BACKUP / BÀI TẬP CŨ ==========
 temp/
 archive/
+*.log
+*.err
+scripts/output.json
+scripts/test_results.log
+test_set.json
+extracted_answers.txt
 
-# Python
-__pycache__/
+# ========== PYTHON ==========
+**/__pycache__/
 *.pyc
 *.pyo
 *.egg-info/
@@ -28,55 +55,42 @@ build/
 *.pyd
 *.dll
 
-# Testing & Coverage
+# ========== TEST / LINT / COVERAGE ==========
 .coverage
 coverage/
 htmlcov/
 .pytest_cache/
 .benchmarks/
 .hypothesis/
-
-# Type checking & Linting
 .mypy_cache/
 .ruff_cache/
 dmypy.json
 .pytype/
 .pyre/
 
-# IDE
+# ========== IDE / EDITOR ==========
 .vscode/
 .idea/
 .claude/
 notebooks/.ipynb_checkpoints/
-
-# Editor temp / swap files
 *.swp
 *.swo
 *~
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-build_log*.txt
-torch_install_*.log
-
-# ML / Experiment Tracking
+# ========== ML EXPERIMENT TRACKING ==========
 wandb/
 mlruns/
 lightning_logs/
 runs/
 
-# Model weights (usually downloaded, not committed)
+# ========== FILE NHỊ PHÂN / LỚN / NÉN ==========
 *.pt
 *.pth
 *.bin
 *.safetensors
-
-# Large files / others
 *.pdf
-test_set.json
-extracted_answers.txt
 *.zip
 *.tar.gz
 *.7z
