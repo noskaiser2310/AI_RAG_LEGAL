@@ -12,6 +12,8 @@ class Config(BaseSettings):
     EMBEDDING_MODEL: str = "mainguyen9/vietlegal-harrier-0.6b"
     EMBEDDING_DIM: int = 1024
     DEVICE: str = "cpu"
+    EMBEDDING_DEVICE: str = ""
+    RERANKER_DEVICE: str = ""
 
     RERANKER_MODEL: str = "AITeamVN/Vietnamese_Reranker"
     RERANKER_TOP_K: int = 30

@@ -1,3 +1,4 @@
+import gc
 import logging
 import time
 
@@ -66,6 +67,22 @@ class HFClient(BaseLLM):
         )
 
         logger.info(f"Loaded in {time.time()-t0:.1f}s ({self._count_params():.1f}B)")
+        if torch.cuda.is_available():
+            logger.info(
+                f"GPU memory after load: "
+                f"{torch.cuda.memory_allocated()/2**30:.1f}G allocated, "
+                f"{torch.cuda.memory_reserved()/2**30:.1f}G reserved"
+            )
+
+    async def close(self):
+        logger.info("Closing HFClient, freeing GPU memory...")
+        if getattr(self, "model", None) is not None:
+            self.model = None
+        if getattr(self, "tokenizer", None) is not None:
+            self.tokenizer = None
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
     def _count_params(self) -> float:
         try:

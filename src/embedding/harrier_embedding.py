@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class HarrierEmbedding(BaseEmbedding):
     def __init__(self, model_name: str | None = None):
         self.model_name = model_name or config.EMBEDDING_MODEL
-        self.device = config.DEVICE
+        self.device = config.EMBEDDING_DEVICE or config.DEVICE
         logger.info(f"Loading Harrier: {self.model_name} on {self.device}")
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
         dtype = torch.float16 if self.device == "cuda" else torch.float32

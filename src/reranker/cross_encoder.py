@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class CrossEncoderReranker(BaseReranker):
     def __init__(self, model_name: str | None = None, use_softmax: bool = True):
         self.model_name = model_name or config.RERANKER_MODEL
-        self.device = config.DEVICE
+        self.device = config.RERANKER_DEVICE or config.DEVICE
         self.use_softmax = use_softmax
         logger.info(f"Loading reranker: {self.model_name} on {self.device}")
         from transformers import AutoTokenizer
