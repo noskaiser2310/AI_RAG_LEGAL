@@ -8,10 +8,17 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 import sys
 import time
 from collections import defaultdict
 from pathlib import Path
+
+# Kaggle: datasets/jax/TF tự preallocate ~75% VRAM -> CUDA OOM khi chay torch.
+os.environ.setdefault("JAX_PLATFORM_NAME", "cpu")
+os.environ.setdefault("XLA_PYTHON_CLIENT_PREALLOCATE", "false")
+os.environ.setdefault("TF_FORCE_GPU_ALLOW_GROWTH", "true")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", os.environ.get("CUDA_VISIBLE_DEVICES", "0"))
 
 import numpy as np
 from sklearn.metrics import fbeta_score, precision_score, recall_score
