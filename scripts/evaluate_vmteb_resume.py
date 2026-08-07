@@ -240,7 +240,8 @@ if __name__ == "__main__":
     parser.add_argument("--batch-size", type=int, default=50)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--llm", choices=["gemini", "hf"], default="gemini", help="LLM backend: gemini (API) or hf (local model)")
-    parser.add_argument("--hf-model", default="Qwen/Qwen3.5-4B-Instruct", help="Model name khi --llm hf")
+    parser.add_argument("--hf-model", default="Qwen/Qwen2.5-7B-Instruct", help="Model name khi --llm hf")
     parser.add_argument("--hf-4bit", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
     asyncio.run(main(args))
+

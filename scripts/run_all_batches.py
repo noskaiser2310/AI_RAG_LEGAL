@@ -13,8 +13,10 @@ WORKERS = 5
 TOTAL_QUERIES = 620
 
 
-def run_batch(batch_idx, llm="gemini", hf_model="Qwen/Qwen3.5-4B-Instruct", hf_4bit=True):
-    log = Path("data/results") / f"batch{batch_idx}.log"
+def run_batch(batch_idx, llm="gemini", hf_model="Qwen/Qwen2.5-7B-Instruct", hf_4bit=True):
+    results_dir = Path("data/results")
+    results_dir.mkdir(parents=True, exist_ok=True)
+    log = results_dir / f"batch{batch_idx}.log"
     cmd = [
         sys.executable, "-m", "scripts.evaluate_vmteb_batch",
         "--batch-idx", str(batch_idx),
@@ -54,7 +56,7 @@ def main():
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--end", type=int, default=12)
     parser.add_argument("--llm", choices=["gemini", "hf"], default="gemini")
-    parser.add_argument("--hf-model", default="Qwen/Qwen3.5-4B-Instruct")
+    parser.add_argument("--hf-model", default="Qwen/Qwen2.5-7B-Instruct")
     parser.add_argument("--hf-4bit", action=argparse.BooleanOptionalAction, default=True)
     args = parser.parse_args()
 
@@ -89,3 +91,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

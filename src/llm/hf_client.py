@@ -30,7 +30,7 @@ Hãy trả lời câu hỏi dựa trên các điều luật được cung cấp.
 class HFClient(BaseLLM):
     def __init__(
         self,
-        model_name: str = "Qwen/Qwen3.5-4B-Instruct",
+        model_name: str = "Qwen/Qwen2.5-3B-Instruct",
         device: str = "auto",
         load_in_4bit: bool = True,
         max_new_tokens: int = 1024,
