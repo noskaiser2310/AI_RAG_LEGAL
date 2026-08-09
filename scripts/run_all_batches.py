@@ -60,9 +60,14 @@ def main():
     parser.add_argument("--hf-model", default="Qwen/Qwen2.5-7B-Instruct")
     parser.add_argument("--hf-4bit", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--workers", type=int, default=None, help="Override workers (default: 1 for hf, 5 for gemini)")
+    parser.add_argument("--force", action="store_true", help="Chay lai batch da co ket qua (mac dinh: skip batch da xong)")
     args = parser.parse_args()
 
     for batch_idx in range(args.start, args.end + 1):
+        metrics_path = Path("data/results") / f"vmteb_batch{batch_idx}_metrics.json"
+        if metrics_path.exists() and not args.force:
+            print(f"Batch {batch_idx}: already done, SKIPPING (use --force to rerun)")
+            continue
         ok = run_batch(batch_idx, llm=args.llm, hf_model=args.hf_model, hf_4bit=args.hf_4bit, workers=args.workers)
         if not ok:
             print(f"  Batch {batch_idx} failed, continuing...")

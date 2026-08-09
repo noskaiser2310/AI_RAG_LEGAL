@@ -181,11 +181,41 @@ async def main(args):
     output_dir = Path(config.DATA_DIR) / "results"
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Incremental: doc partial file -> chi chay query chua co ket qua
+    partial_path = output_dir / f"vmteb_batch{batch_idx}_partial.jsonl"
+    existing: dict[str, dict] = {}
+    if partial_path.exists():
+        with open(partial_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    p = json.loads(line)
+                    existing[p["query_id"]] = p
+                except json.JSONDecodeError:
+                    continue
+        logger.info(f"Partial file found: {len(existing)} queries already done")
+
+    to_run = [item for item in batch if item["query_id"] not in existing]
+    skipped = [existing[q["query_id"]] for q in batch if q["query_id"] in existing]
+    if to_run:
+        logger.info(f"Running {len(to_run)} queries (skipping {len(skipped)} done)")
+
     sem = asyncio.Semaphore(args.workers)
-    predictions = []
-    tasks = [process_one(item, pipeline, sem) for item in batch]
-    for coro in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc=f"Batch {batch_idx}"):
-        predictions.append(await coro)
+    predictions: list[dict] = list(skipped)
+    if to_run:
+        tasks = [process_one(item, pipeline, sem) for item in to_run]
+        for coro in tqdm(asyncio.as_completed(tasks), total=len(tasks), desc=f"Batch {batch_idx}"):
+            pred = await coro
+            predictions.append(pred)
+            # LUU NGAY tung query (chong mat du lieu neu session chet)
+            with open(partial_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(pred, ensure_ascii=False) + "\n")
+            f_metrics = output_dir / f"vmteb_batch{batch_idx}_metrics.json"
+            if f_metrics.exists():
+                f_metrics.unlink()
+    predictions.sort(key=lambda p: p["query_id"])
 
     await llm.close()
 
