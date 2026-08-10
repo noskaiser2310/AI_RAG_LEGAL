@@ -138,38 +138,83 @@ class LawNameIndex:
             if matches:
                 return max(matches, key=len)
 
-        law_lower = law_name.lower()
-        for title in self.all_titles:
-            if len(title) < 10:
-                continue
-            if law_lower in title.lower() or title.lower() in law_lower:
-                return title
+        law_lower = law_name.lower().strip()
+        law_type = self._law_type(law_lower)
+        year_m = re.search(r"\b(19|20)\d{2}\b", law_lower)
+        law_year = year_m.group(0) if year_m else None
+        core = self._core_name(law_lower)
+        core_words = [w for w in core.split() if len(w) > 2]
 
-        law_core = re.sub(r"^(luật|bộ luật|nghị định|thông tư|quyết định|chỉ thị)\s+", "", law_lower).strip()
-        law_core = re.sub(r"\s*\d{4}\s*$", "", law_core).strip()
-        if len(law_core) > 3:
-            for name_key, title in self.name_to_title.items():
-                if law_core in name_key or name_key in law_core:
-                    return title
-
-        words = [w for w in law_lower.split() if len(w) > 3]
-        skip_words = {"luật", "nghị", "thông", "quyết", "chỉ", "năm"}
-        words = [w for w in words if w not in skip_words and not w.isdigit()]
-        if len(words) >= 2:
+        # 1) Type-aware scored match (dung loai van ban + uu tien dung nam)
+        if core_words:
             best_match = None
-            best_score = 0
+            best_score = 0.0
             for title in self.all_titles:
                 if len(title) < 10:
                     continue
                 title_lower = title.lower()
-                score = sum(1 for w in words if w in title_lower)
-                if score >= len(words) * 0.5 and score > best_score:
+                t_type = self._law_type(title_lower)
+                if law_type:
+                    if not self._types_compatible(law_type, t_type):
+                        continue
+                t_year_m = re.search(r"\b(19|20)\d{2}\b", title_lower)
+                t_year = t_year_m.group(0) if t_year_m else None
+                t_core = self._core_name(title_lower)
+                t_words = set(w for w in t_core.split() if len(w) > 2)
+                if not t_words:
+                    continue
+                hits = sum(1 for w in core_words if w in t_words)
+                ratio = hits / len(core_words)
+                if ratio < 0.6 or hits < 2:
+                    continue
+                score = ratio
+                if law_year and t_year == law_year:
+                    score += 0.2
+                elif law_year and t_year:
+                    score -= 0.1
+                if score > best_score:
                     best_score = score
                     best_match = title
             if best_match:
                 return best_match
 
+        # 2) Fallback: ten da chuan hoa (van tuan thu loai van ban)
+        law_core = re.sub(r"^(bộ luật|luật|nghị định|thông tư|quyết định|chỉ thị)\s+", "", law_lower).strip()
+        law_core = re.sub(r"\s*\d{4}\s*$", "", law_core).strip()
+        if len(law_core) > 3:
+            for name_key, title in self.name_to_title.items():
+                t_type = self._law_type(title.lower())
+                if law_type and not self._types_compatible(law_type, t_type):
+                    continue
+                if law_core in name_key or name_key in law_core:
+                    return title
+
         return None
+
+    @staticmethod
+    def _law_type(text: str) -> str | None:
+        m = re.match(
+            r"^\s*(bộ luật|thông tư liên tịch|nghị định|thông tư|quyết định|chỉ thị|nghị quyết|pháp lệnh|luật)\b",
+            text,
+        )
+        return m.group(1) if m else None
+
+    @staticmethod
+    def _types_compatible(q_type: str, t_type: str | None) -> bool:
+        if not t_type:
+            return True
+        law_like = {"luật", "bộ luật"}
+        if q_type in law_like and t_type in law_like:
+            return True
+        return q_type == t_type
+
+    @staticmethod
+    def _core_name(text: str) -> str:
+        t = re.sub(r"^\s*(bộ luật|luật|nghị định|thông tư liên tịch|thông tư|quyết định|chỉ thị|nghị quyết|pháp lệnh)\s+", "", text)
+        t = re.sub(r"\b\d{4}\b", "", t)
+        t = re.sub(r"\d+/\d+/[^\s]+", "", t)
+        t = re.sub(r"[^\w\s]+", " ", t, flags=re.UNICODE)
+        return re.sub(r"\s+", " ", t).strip()
 
 
 class LegalAgent:
