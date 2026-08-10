@@ -19,14 +19,19 @@ class CrossEncoderReranker(BaseReranker):
         self.use_softmax = use_softmax
         logger.info(f"Loading reranker: {self.model_name} on {self.device}")
         from transformers import AutoTokenizer
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            self.model_name, trust_remote_code=True, use_fast=False
-        )
+        from src.core.cache import resolve_model_path
+
+        model_path = resolve_model_path(self.model_name)
         dtype = torch.float16 if self.device == "cuda" else torch.float32
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_path, trust_remote_code=True, use_fast=False,
+            local_files_only=model_path != self.model_name,
+        )
         self.model = AutoModelForSequenceClassification.from_pretrained(
-            self.model_name,
+            model_path,
             trust_remote_code=True,
             torch_dtype=dtype,
+            local_files_only=model_path != self.model_name,
         ).to(self.device)
         self.model.eval()
 

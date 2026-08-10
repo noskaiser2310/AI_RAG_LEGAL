@@ -14,10 +14,16 @@ class HarrierEmbedding(BaseEmbedding):
         self.model_name = model_name or config.EMBEDDING_MODEL
         self.device = config.EMBEDDING_DEVICE or config.DEVICE
         logger.info(f"Loading Harrier: {self.model_name} on {self.device}")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True)
+        from src.core.cache import resolve_model_path
+
+        model_path = resolve_model_path(self.model_name)
         dtype = torch.float16 if self.device == "cuda" else torch.float32
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_path, trust_remote_code=True, local_files_only=model_path != self.model_name
+        )
         self.model = AutoModel.from_pretrained(
-            self.model_name, trust_remote_code=True, dtype=dtype
+            model_path, trust_remote_code=True, dtype=dtype,
+            local_files_only=model_path != self.model_name,
         ).to(self.device)
         self.model.eval()
         self._dim = config.EMBEDDING_DIM

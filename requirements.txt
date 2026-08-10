@@ -10,3 +10,5 @@ scipy>=1.12.0
 datasets>=2.19.0
 tqdm>=4.66.0
 pydantic-settings>=2.2.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0

@@ -19,7 +19,7 @@ def run_batch(batch_idx, llm="gemini", hf_model="Qwen/Qwen2.5-7B-Instruct", hf_4
     log = results_dir / f"batch{batch_idx}.log"
     n_workers = workers if workers is not None else (1 if llm == "hf" else WORKERS)
     cmd = [
-        sys.executable, "-m", "scripts.evaluate_vmteb_batch",
+        sys.executable, "-m", "evaluate.evaluate_vmteb_batch",
         "--batch-idx", str(batch_idx),
         "--batch-size", str(BATCH_SIZE),
         "--workers", str(n_workers),
